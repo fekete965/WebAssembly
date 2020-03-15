@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebAssemvly Demo</title>
+</head>
+<body>
+    <h1>Prime Number Performance</h1>
+</body>
+<script src='./prime.js'></script>
+<script>
+  // Numbers to check: 0 - primes
+
+  const primes = 200000
+  // JS Prime number checker
+  const isPrime = num => {
+    for (let i = 2; i < num; i++)
+      if (num % i === 0) return false
+      return num !== 1 && num !== 0
+  }
+
+  // Check numbers 0 - {prime}
+  const checkPrimes = num => {
+    let count = 0
+      for(let i = 0; i < primes; i += 1) {
+        if (isPrime(i)) count += 1
+      }
+    return count
+  }
+
+  // Check both JS & C once the WASM is ready
+  Module['onRuntimeInitialized'] = () => {
+    // Check JS
+    let jsStart = performance.now()
+    let jsPrimes = checkPrimes(primes)
+    console.log('JS', jsPrimes, Math.round(performance.now() - jsStart) / 1000)
+    
+    // Check C
+    let cStart = performance.now()
+    let cPrimes = _checkPrimes(primes)
+    console.log('C', cPrimes, Math.round(performance.now() - cStart) / 1000)
+  }
+
+  
+</script>
+</html>
