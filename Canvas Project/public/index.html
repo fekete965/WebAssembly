@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Project</title>
+  <style>
+    body, canvas {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      background-color: #c77100;
+    }
+
+    canvas {
+      background-color: #242222;
+      border: 0.5em solid #fff;
+    }
+
+    .container {
+      text-align: center;
+      margin: 1em auto;
+      font-weight: bold;
+      font-size: 1.3em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <label>50&nbsp;<input id="inputRange" type="range" min="50" max="1500" value="50">&nbsp;1500</label>
+    <div>Circles: <span id="circleCounter"></span></div>
+  </div>
+  <canvas id="canvas" width="1250" height="1000"></canvas>
+</body>
+<script src='./canvas.js'></script>
+<script>
+  let animation = undefined
+  let value = 50
+
+  const circleCounter = document.getElementById('circleCounter')
+  circleCounter.innerText = value.toString()
+  
+  const inputCircelNum = document.getElementById('inputRange')
+  const canvas = document.getElementById('canvas')
+  const context = canvas.getContext('2d')
+
+  
+  const handleRangeOnChange = event => {
+    value = parseInt(event.target.value, 10)
+    circleCounter.innerText = value.toString()
+    _initCircles()
+  }
+
+  inputCircelNum.addEventListener('change', handleRangeOnChange)
+
+
+  // Render circles on canvas
+  const render = (dataLength, circleStructSize) => {
+    // Ger circle data from C - Typed Array
+    let circles = new Int32Array(HEAPU8.buffer, _getCircles(canvas.width, canvas.height), dataLength)
+
+    // Clear existing canvas to re-render
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    
+    // Loop data and fget circle chunks
+    for (let i = 0; i < value; i += circleStructSize) {
+      let circle = circles.slice(i, i + circleStructSize)
+
+      const [x, y, r, cr, cg, cb] = circle
+      // Draw circle
+      context.beginPath()
+      context.arc(x, y, r, 0, 2 * Math.PI, false)
+      context.fillStyle = `rgba(${cr}, ${cg}, ${cb}, 0.75)`
+      context.fill()
+    }
+
+    // Request next animation frame and re-render with updated circles
+    if (animation === undefined)  {
+      animation = requestAnimationFrame(() => {
+        render(dataLength, circleStructSize)
+      })
+    } else {
+      cancelAnimationFrame(animation)
+      animation = requestAnimationFrame(() => {
+        render(dataLength, circleStructSize)
+      })
+    }
+  }
+</script>
+</html>
